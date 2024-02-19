@@ -12,7 +12,8 @@ function setBlindsAndDeal(gameState) {
 
     const updatedPlayers = gameState.players.map((player, index) => {
         const isSmallBlind = index === gameState.smallBlindIndex;
-        const isBigBlind = index === gameState.bigBlindIndex;
+        const bigBlindIndex = (game.smallBlindIndex + 1) % game.players.length;
+        const isBigBlind = index === bigBlindIndex;
         const betAmount = isSmallBlind ? smallBlindAmount : (isBigBlind ? bigBlindAmount : 0);
         const chips = player.chips - betAmount;
         const potContribution = player.potContribution + betAmount;
@@ -27,7 +28,7 @@ function setBlindsAndDeal(gameState) {
     });
 
     const newPot = gameState.pot + smallBlindAmount + bigBlindAmount;
-    const nextTurn = (gameState.bigBlindIndex + 1) % gameState.players.length;
+    const nextTurn = (bigBlindIndex + 1) % gameState.players.length;
     const newGameState = {
         ...gameState,
         players: updatedPlayers,
