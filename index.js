@@ -1,7 +1,7 @@
 const AWS = require('aws-sdk');
 const dynamoDb = new AWS.DynamoDB.DocumentClient();
 const tableName = process.env.GAME_TABLE;
-const { setBlindsAndDeal } = require('/opt/node_modules/gameUtils');
+const { setBlindsAndDeal } = require('/opt/nodejs/node_modules/gameUtils');
 
 exports.handler = async (event) => {
     const { gameId, playerId } = JSON.parse(event.body);
