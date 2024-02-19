@@ -6,13 +6,13 @@ const tableName = process.env.GAME_TABLE;
 function setBlindsAndDeal(gameState) {
     const smallBlindAmount = gameState.initialBigBlind / 2;
     const bigBlindAmount = gameState.initialBigBlind;
+    const bigBlindIndex = (gameState.smallBlindIndex + 1) % gameState.players.length;
 
     const deck = new Deck();
     deck.shuffle();
 
     const updatedPlayers = gameState.players.map((player, index) => {
         const isSmallBlind = index === gameState.smallBlindIndex;
-        const bigBlindIndex = (gameState.smallBlindIndex + 1) % gameState.players.length;
         const isBigBlind = index === bigBlindIndex;
         const betAmount = isSmallBlind ? smallBlindAmount : (isBigBlind ? bigBlindAmount : 0);
         const chips = player.chips - betAmount;
