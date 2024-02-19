@@ -1,7 +1,46 @@
 const AWS = require('aws-sdk');
+const Deck = require('./Deck');
 const dynamoDb = new AWS.DynamoDB.DocumentClient();
 const tableName = process.env.GAME_TABLE;
-const { setBlindsAndDeal } = require('/opt/nodejs/node_modules/gameUtils');
+
+function setBlindsAndDeal(gameState) {
+    const smallBlindAmount = gameState.initialBigBlind / 2;
+    const bigBlindAmount = gameState.initialBigBlind;
+
+    const deck = new Deck();
+    deck.shuffle();
+
+    const updatedPlayers = gameState.players.map((player, index) => {
+        const isSmallBlind = index === gameState.smallBlindIndex;
+        const isBigBlind = index === gameState.bigBlindIndex;
+        const betAmount = isSmallBlind ? smallBlindAmount : (isBigBlind ? bigBlindAmount : 0);
+        const chips = player.chips - betAmount;
+        const potContribution = player.potContribution + betAmount;
+        
+        return {
+            ...player,
+            bet: betAmount,
+            chips,
+            potContribution,
+            hand: deck.deal(2),
+        };
+    });
+
+    const newPot = gameState.pot + smallBlindAmount + bigBlindAmount;
+    const nextTurn = (gameState.bigBlindIndex + 1) % gameState.players.length;
+    const newGameState = {
+        ...gameState,
+        players: updatedPlayers,
+        pot: newPot,
+        deck: deck,
+        gameStage: 'preFlop',
+        highestBet: 10,
+        bettingStarted: true,
+        currentTurn: nextTurn,
+    };
+
+    return newGameState;
+}
 
 exports.handler = async (event) => {
     const { gameId, playerId } = JSON.parse(event.body);
