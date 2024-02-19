@@ -97,7 +97,7 @@ exports.handler = async (event) => {
             gameSession.gameStarted = true;
             gameSession.gameInProgress = true;
             message += " Minimum number of players reached. Game started!";
-            updateExpression += ', gameStarted = :gameStarted, pot = :pot, currentTurn = :currentTurn, gameStage = :gameStage';
+            updateExpression = 'SET players = :players, playerCount = :playerCount, gameStarted = :gameStarted, pot = :pot, currentTurn = :currentTurn, gameStage = :gameStage, gameInProgress = :gameInProgress, deck = : deck, highestBet = :highestBet, bettingStarted = :bettingStarted';
             expressionAttributeValues[':gameStarted'] = gameSession.gameStarted;
             expressionAttributeValues[':pot'] = gameSession.pot;
             expressionAttributeValues[':currentTurn'] = gameSession.currentTurn;
