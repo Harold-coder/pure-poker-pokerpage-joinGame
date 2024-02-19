@@ -12,7 +12,7 @@ function setBlindsAndDeal(gameState) {
 
     const updatedPlayers = gameState.players.map((player, index) => {
         const isSmallBlind = index === gameState.smallBlindIndex;
-        const bigBlindIndex = (game.smallBlindIndex + 1) % game.players.length;
+        const bigBlindIndex = (gameState.smallBlindIndex + 1) % gameState.players.length;
         const isBigBlind = index === bigBlindIndex;
         const betAmount = isSmallBlind ? smallBlindAmount : (isBigBlind ? bigBlindAmount : 0);
         const chips = player.chips - betAmount;
