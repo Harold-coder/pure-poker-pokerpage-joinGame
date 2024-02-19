@@ -3,7 +3,7 @@ const dynamoDb = new AWS.DynamoDB.DocumentClient();
 const tableName = process.env.GAME_TABLE;
 
 exports.handler = async (event) => {
-  const { gameId, playerUsername } = JSON.parse(event.body);
+  const { gameId, playerId } = JSON.parse(event.body); // Assuming playerId is passed in the request
 
   // Retrieve the game session by gameId
   try {
@@ -24,25 +24,45 @@ exports.handler = async (event) => {
       return { statusCode: 400, body: JSON.stringify({ message: "Maximum number of players reached." }) };
     }
 
-    // Add player to game session
-    gameSession.players.push(playerUsername);
+    // Create a new player object
+    const newPlayer = {
+      id: playerId,
+      position: gameSession.players.length, // Assigning position based on the current length
+      chips: gameSession.buyIn,
+      bet: 0,
+      inHand: true,
+      isReady: false,
+      hand: [],
+      hasActed: false,
+      potContribution: 0,
+      isAllIn: false,
+      amountWon: 0,
+      handDescription: null,
+      bestHand: null,
+    };
+
+    // Add new player to game session
+    gameSession.players.push(newPlayer);
+
+    // Update player count
+    gameSession.playerCount = gameSession.players.length;
 
     // Update the game session in DynamoDB
     await dynamoDb.update({
       TableName: tableName,
       Key: { gameId },
-      UpdateExpression: 'SET players = :players',
+      UpdateExpression: 'SET players = :players, playerCount = :playerCount',
       ExpressionAttributeValues: {
         ':players': gameSession.players,
+        ':playerCount': gameSession.playerCount,
       },
       ReturnValues: 'ALL_NEW',
     }).promise();
 
-    // Check if the minimum number of players has been met and potentially initialize the game
     let message = "Player added successfully.";
+    // Check if the minimum number of players has been met and potentially initialize the game
     if (gameSession.players.length >= gameSession.minPlayers) {
       // Initialize game logic here (to be implemented)
-      // TODO: IMPLEMENT THE INITIALISE GAME
       message += " Minimum number of players reached. Initializing game...";
     }
 
