@@ -121,7 +121,7 @@ exports.handler = async (event) => {
             ReturnValues: 'ALL_NEW',
         }).promise();
 
-        const updatedGameState = { ...gameSession, players: updatedPlayers };
+        const updatedGameState = { ...gameSession };
 
         // Retrieve all connections for this game
         const connectionData = await dynamoDb.scan({
