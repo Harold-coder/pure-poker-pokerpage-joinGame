@@ -125,13 +125,14 @@ exports.handler = async (event) => {
             ConnectionId: connectionId,
             Data: JSON.stringify({
                 message: 'Player joined successfully',
-                gameDetails: gameSession
+                gameDetails: gameSession,
+                statusCode: 200
             })
         }).promise();
 
         return {
             statusCode: 200,
-            body: JSON.stringify({ message, statusCode: 200 }),
+            body: JSON.stringify({ message }),
         };
     } catch (error) {
         console.error('Error:', error);
