@@ -121,6 +121,44 @@ exports.handler = async (event) => {
             ReturnValues: 'ALL_NEW',
         }).promise();
 
+        const updatedGameState = { ...gameSession, players: updatedPlayers };
+
+        // Retrieve all connections for this game
+        const connectionData = await dynamoDb.scan({
+            TableName: connectionsTableName,
+            FilterExpression: "gameId = :gameId",
+            ExpressionAttributeValues: {
+            ":gameId": gameId
+            }
+        }).promise();
+
+        // Iterate over each connection and post the updated game state
+        const postCalls = connectionData.Items.map(async ({ connectionId }) => {
+            try {
+            await apiGatewayManagementApi.postToConnection({
+                ConnectionId: connectionId,
+                Data: JSON.stringify({
+                action: 'updateGameState',
+                data: updatedGameState
+                })
+            }).promise();
+            } catch (error) {
+            if (error.statusCode === 410) {
+                console.log(`Found stale connection, deleting ${connectionId}`);
+                await dynamoDb.delete({ TableName: connectionsTableName, Key: { connectionId } }).promise();
+            } else {
+                throw error;
+            }
+            }
+        });
+        
+        try {
+            await Promise.all(postCalls);
+            console.log('Game state updated and pushed to all players.');
+        } catch (error) {
+            return { statusCode: 500, body: JSON.stringify({ message: "Failed to broadcast game state." }) };
+        }
+
         await apiGatewayManagementApi.postToConnection({
             ConnectionId: connectionId,
             Data: JSON.stringify({
