@@ -2,6 +2,9 @@ const AWS = require('aws-sdk');
 const Deck = require('./Deck');
 const dynamoDb = new AWS.DynamoDB.DocumentClient();
 const tableName = process.env.GAME_TABLE;
+const apiGatewayManagementApi = new AWS.ApiGatewayManagementApi({
+    endpoint: process.env.WEBSOCKET_ENDPOINT // Set this environment variable to your WebSocket API endpoint.
+});
 
 function setBlindsAndDeal(gameState) {
     const smallBlindAmount = gameState.initialBigBlind / 2;
@@ -44,6 +47,7 @@ function setBlindsAndDeal(gameState) {
 }
 
 exports.handler = async (event) => {
+    const connectionId = event.requestContext.connectionId;
     const { gameId, playerId } = JSON.parse(event.body);
 
     try {
@@ -115,6 +119,14 @@ exports.handler = async (event) => {
             UpdateExpression: updateExpression,
             ExpressionAttributeValues: expressionAttributeValues,
             ReturnValues: 'ALL_NEW',
+        }).promise();
+
+        await apiGatewayManagementApi.postToConnection({
+            ConnectionId: connectionId,
+            Data: JSON.stringify({
+                message: 'Player joined successfully',
+                gameDetails: gameSession
+            })
         }).promise();
 
         return {
