@@ -60,15 +60,15 @@ exports.handler = async (event) => {
         let gameSession = gameSessionResponse.Item;
 
         if (!gameSession) {
-            return { statusCode: 404, body: JSON.stringify({ message: "Game session not found." }) };
+            return { statusCode: 404, body: JSON.stringify({ message: "Game session not found.", action: 'joinGame' }) };
         }
 
         if (gameSession.gameInProgress) {
-            return { statusCode: 403, body: JSON.stringify({ message: "Game is already in progress. You can only spectate." }) };
+            return { statusCode: 403, body: JSON.stringify({ message: "Game is already in progress. You can only spectate.", action: 'joinGame' }) };
         }
 
         if (gameSession.players.length >= gameSession.maxPlayers) {
-            return { statusCode: 400, body: JSON.stringify({ message: "Maximum number of players reached." }) };
+            return { statusCode: 400, body: JSON.stringify({ message: "Maximum number of players reached.", action: 'joinGame' }) };
         }
 
         const newPlayer = {
@@ -122,23 +122,26 @@ exports.handler = async (event) => {
             ReturnValues: 'ALL_NEW',
         }).promise();
 
-        // const saveConnectionInfo = async (connectionId, gameId, playerId) => {
-        //     const params = {
-        //         TableName: connectionsTableName,
-        //         Item: {
-        //             connectionId: connectionId,
-        //             gameId: gameId,
-        //             playerUsername: playerId, // Assuming playerUsername is the same as playerId in this example
-        //         }
-        //     };
-        
-        //     try {
-        //         await dynamoDb.put(params).promise();
-        //         console.log("Connection info saved successfully");
-        //     } catch (error) {
-        //         console.error("Error saving connection info:", error);
-        //     }
-        // };
+        // Assuming you've already added the player to the game session successfully
+
+        const updateConnectionParams = {
+            TableName: connectionsTableName,
+            Key: { connectionId: connectionId },
+            UpdateExpression: "set gameId = :g, playerId = :p",
+            ExpressionAttributeValues: {
+                ":g": gameId,
+                ":p": playerId // Assuming playerId is the player's username. Adjust accordingly.
+            }
+        };
+
+        try {
+            await dynamoDb.update(updateConnectionParams).promise();
+            console.log("Connection updated with gameId and playerId.");
+        } catch (error) {
+            console.error("Failed to update connection:", error);
+            // Handle error accordingly
+        }
+
 
         const updatedGameState = { ...gameSession };
 
@@ -183,6 +186,7 @@ exports.handler = async (event) => {
             ConnectionId: connectionId,
             Data: JSON.stringify({
                 message: 'Player joined successfully',
+                action: 'joinGame',
                 gameDetails: gameSession,
                 statusCode: 200
             })
@@ -196,7 +200,7 @@ exports.handler = async (event) => {
         console.error('Error:', error);
         return {
             statusCode: 500,
-            body: JSON.stringify({ message: "Failed to join game" }),
+            body: JSON.stringify({ message: "Failed to join game", action: 'joinGame' }),
         };
     }
 };
