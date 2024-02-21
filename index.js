@@ -122,6 +122,24 @@ exports.handler = async (event) => {
             ReturnValues: 'ALL_NEW',
         }).promise();
 
+        // const saveConnectionInfo = async (connectionId, gameId, playerId) => {
+        //     const params = {
+        //         TableName: connectionsTableName,
+        //         Item: {
+        //             connectionId: connectionId,
+        //             gameId: gameId,
+        //             playerUsername: playerId, // Assuming playerUsername is the same as playerId in this example
+        //         }
+        //     };
+        
+        //     try {
+        //         await dynamoDb.put(params).promise();
+        //         console.log("Connection info saved successfully");
+        //     } catch (error) {
+        //         console.error("Error saving connection info:", error);
+        //     }
+        // };
+
         const updatedGameState = { ...gameSession };
 
         // Retrieve all connections for this game
@@ -140,7 +158,8 @@ exports.handler = async (event) => {
                 ConnectionId: connectionId,
                 Data: JSON.stringify({
                 action: 'updateGameState',
-                data: updatedGameState
+                data: updatedGameState,
+                statusCode: 200
                 })
             }).promise();
             } catch (error) {
