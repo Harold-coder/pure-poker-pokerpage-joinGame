@@ -161,7 +161,7 @@ exports.handler = async (event) => {
                 ConnectionId: connectionId,
                 Data: JSON.stringify({
                 action: 'updateGameState',
-                data: updatedGameState,
+                gameDetails: updatedGameState,
                 statusCode: 200
                 })
             }).promise();
