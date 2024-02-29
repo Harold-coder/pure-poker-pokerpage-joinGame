@@ -1,5 +1,5 @@
 const AWS = require('aws-sdk');
-const Deck = require('./Deck');
+const Deck = require('Deck');
 const dynamoDb = new AWS.DynamoDB.DocumentClient();
 const tableName = process.env.GAME_TABLE;
 const connectionsTableName = process.env.CONNECTIONS_TABLE;
