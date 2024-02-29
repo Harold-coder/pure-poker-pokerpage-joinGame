@@ -1,51 +1,11 @@
 const AWS = require('aws-sdk');
-const Deck = require('Deck');
+const Helpers = require('UpdateGame')
 const dynamoDb = new AWS.DynamoDB.DocumentClient();
 const tableName = process.env.GAME_TABLE;
 const connectionsTableName = process.env.CONNECTIONS_TABLE;
 const apiGatewayManagementApi = new AWS.ApiGatewayManagementApi({
     endpoint: process.env.WEBSOCKET_ENDPOINT // Set this environment variable to your WebSocket API endpoint.
 });
-
-function setBlindsAndDeal(gameState) {
-    const smallBlindAmount = gameState.initialBigBlind / 2;
-    const bigBlindAmount = gameState.initialBigBlind;
-    const bigBlindIndex = (gameState.smallBlindIndex + 1) % gameState.players.length;
-
-    const deck = new Deck();
-    deck.shuffle();
-
-    const updatedPlayers = gameState.players.map((player, index) => {
-        const isSmallBlind = index === gameState.smallBlindIndex;
-        const isBigBlind = index === bigBlindIndex;
-        const betAmount = isSmallBlind ? smallBlindAmount : (isBigBlind ? bigBlindAmount : 0);
-        const chips = player.chips - betAmount;
-        const potContribution = player.potContribution + betAmount;
-        
-        return {
-            ...player,
-            bet: betAmount,
-            chips,
-            potContribution,
-            hand: deck.deal(2),
-        };
-    });
-
-    const newPot = gameState.pot + smallBlindAmount + bigBlindAmount;
-    const nextTurn = (bigBlindIndex + 1) % gameState.players.length;
-    const newGameState = {
-        ...gameState,
-        players: updatedPlayers,
-        pot: newPot,
-        deck: deck,
-        gameStage: 'preFlop',
-        highestBet: 10,
-        bettingStarted: true,
-        currentTurn: nextTurn,
-    };
-
-    return newGameState;
-}
 
 exports.handler = async (event) => {
     const connectionId = event.requestContext.connectionId;
@@ -98,7 +58,7 @@ exports.handler = async (event) => {
         };
 
         if (gameSession.players.length >= gameSession.minPlayers) {
-            gameSession = setBlindsAndDeal(gameSession);
+            Helpers.setBlindsAndDeal(gameSession);
             gameSession.gameStarted = true;
             gameSession.gameInProgress = true;
             message += " Minimum number of players reached. Game started!";
