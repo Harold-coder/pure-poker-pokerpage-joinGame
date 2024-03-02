@@ -23,11 +23,7 @@ exports.handler = async (event) => {
             return { statusCode: 404, body: JSON.stringify({ message: "Game session not found.", action: 'joinGame' }) };
         }
 
-        if (gameSession.players.length >= gameSession.maxPlayers) {
-            return { statusCode: 400, body: JSON.stringify({ message: "Maximum number of players reached.", action: 'joinGame' }) };
-        }
-
-        if (gameSession.gameInProgress) {
+        if (gameSession.gameInProgress || gameSession.players.length >= gameSession.maxPlayers) {
             gameSession.waitingPlayers.push(playerId);
             const updateConnectionParams = {
                 TableName: connectionsTableName,
