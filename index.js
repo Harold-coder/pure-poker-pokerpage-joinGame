@@ -56,6 +56,14 @@ exports.handler = async (event) => {
                 },
                 ReturnValues: 'ALL_NEW',
             }).promise();
+
+            return {
+                statusCode: 200,
+                body: JSON.stringify({
+                    message: 'You are in waiting mode. You will join the next game.',
+                    action: 'waitingForNextGame'
+                })
+            };
         } else {
             const newPlayer = {
                 id: playerId,
