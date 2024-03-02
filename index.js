@@ -43,7 +43,8 @@ exports.handler = async (event) => {
                 ConnectionId: connectionId,
                 Data: JSON.stringify({
                     action: 'waitingForNextGame',
-                    message: 'You are in waiting mode. You will join the next game.'
+                    message: 'You are in waiting mode. You will join the next game.',
+                    gameDetails: gameSession
                 })
             }).promise();
 
