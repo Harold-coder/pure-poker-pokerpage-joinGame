@@ -32,14 +32,14 @@ exports.handler = async (event) => {
                 ConnectionId: connectionId,
                 Data: JSON.stringify({
                     action: 'joinGame',
-                    message: 'Player already in the game session',
+                    message: 'You are already already in the game session',
                     statusCode: 400
                 })
             }).promise();
             // If the player is already in the game, return a message indicating they can't join again
             return {
                 statusCode: 400,
-                body: JSON.stringify({ message: "Player already in the game session.", action: 'joinGame' }),
+                body: JSON.stringify({ message: "You are already in the game session.", action: 'joinGame' }),
             };
         }
 
