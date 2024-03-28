@@ -23,6 +23,17 @@ exports.handler = async (event) => {
             return { statusCode: 404, body: JSON.stringify({ message: "Game session not found.", action: 'joinGame' }) };
         }
 
+        // Check if player is already in the game session
+        const playerAlreadyInGame = gameSession.players.some(player => player.id === playerId);
+
+        if (playerAlreadyInGame) {
+            // If the player is already in the game, return a message indicating they can't join again
+            return {
+                statusCode: 400,
+                body: JSON.stringify({ message: "Player already in the game session.", action: 'joinGame' }),
+            };
+        }
+
         if (gameSession.gameInProgress || gameSession.players.length >= gameSession.maxPlayers) {
             gameSession.waitingPlayers.push(playerId);
             const updateConnectionParams = {
