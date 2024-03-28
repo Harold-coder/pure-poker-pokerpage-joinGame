@@ -27,6 +27,15 @@ exports.handler = async (event) => {
         const playerAlreadyInGame = gameSession.players.some(player => player.id === playerId);
 
         if (playerAlreadyInGame) {
+            // Notify the player they are in waiting mode
+            await apiGatewayManagementApi.postToConnection({
+                ConnectionId: connectionId,
+                Data: JSON.stringify({
+                    action: 'joinGame',
+                    message: 'Player already in the game session',
+                    statusCode: 400
+                })
+            }).promise();
             // If the player is already in the game, return a message indicating they can't join again
             return {
                 statusCode: 400,
@@ -55,7 +64,8 @@ exports.handler = async (event) => {
                 Data: JSON.stringify({
                     action: 'waitingForNextGame',
                     message: 'You are in waiting mode. You will join the next game.',
-                    gameDetails: gameSession
+                    gameDetails: gameSession, 
+                    statusCode: 200
                 })
             }).promise();
 
